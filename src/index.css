@@ -1,0 +1,156 @@
+:root {
+  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  /* Wine Color Palette */
+  --wine-primary: #722f37;
+  --wine-secondary: #8b4953;
+  --wine-light: #a86470;
+  --wine-dark: #5c252a;
+  --wine-accent: #d4a5a5;
+  --background: #fdf8f8;
+  --text-primary: #2c1114;
+  --text-secondary: #5c252a;
+  --border: #e6d4d4;
+  --shadow: rgba(114, 47, 55, 0.1);
+
+  color: var(--text-primary);
+  background-color: var(--background);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: var(--wine-primary);
+  text-decoration: inherit;
+  transition: color 0.3s ease;
+}
+a:hover {
+  color: var(--wine-light);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--background) 0%, #f5f0f0 100%);
+}
+
+h1 {
+  font-size: 2.5em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.8em;
+  color: var(--wine-primary);
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.3em;
+  color: var(--wine-secondary);
+  margin-bottom: 0.8rem;
+}
+
+button {
+  border-radius: 12px;
+  border: 2px solid transparent;
+  padding: 0.8em 1.6em;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: inherit;
+  background: linear-gradient(
+    135deg,
+    var(--wine-primary) 0%,
+    var(--wine-secondary) 100%
+  );
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+button:hover {
+  background: linear-gradient(
+    135deg,
+    var(--wine-secondary) 0%,
+    var(--wine-light) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--shadow);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 3px solid var(--wine-accent);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--wine-primary);
+  color: var(--wine-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--wine-primary);
+  color: white;
+}
+
+/* Form Styles */
+input,
+textarea,
+select {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7em 1em;
+  font-size: 1em;
+  font-family: inherit;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--wine-primary);
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+}
+
+/* Card Styles */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px var(--shadow);
+  border: 1px solid var(--border);
+}
+
+/* Utility Classes */
+.text-wine {
+  color: var(--wine-primary);
+}
+.text-wine-light {
+  color: var(--wine-light);
+}
+.bg-wine {
+  background-color: var(--wine-primary);
+}
+.border-wine {
+  border-color: var(--wine-primary);
+}

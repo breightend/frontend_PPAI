@@ -1,0 +1,404 @@
+#root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fdf8f8 0%, #f5f0f0 100%);
+}
+
+/* Navbar Styles */
+.navbar {
+  background: linear-gradient(
+    135deg,
+    var(--wine-primary) 0%,
+    var(--wine-dark) 100%
+  );
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 20px rgba(114, 47, 55, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar h1 {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
+}
+
+/* Main Content */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  min-height: calc(100vh - 120px);
+}
+
+/* Welcome Section */
+.welcome-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  color: var(--wine-primary);
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.welcome-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Form Sections */
+.form-section {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 12px 40px rgba(114, 47, 55, 0.08);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.form-section:hover {
+  box-shadow: 0 16px 48px rgba(114, 47, 55, 0.12);
+  transform: translateY(-2px);
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: var(--wine-primary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--wine-primary), var(--wine-light));
+  border-radius: 2px;
+}
+
+/* Order Selection */
+.order-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.order-item {
+  padding: 1.2rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: #fafafa;
+}
+
+.order-item:hover {
+  border-color: var(--wine-light);
+  background: white;
+  box-shadow: 0 4px 12px rgba(114, 47, 55, 0.1);
+}
+
+.order-item.selected {
+  border-color: var(--wine-primary);
+  background: var(--wine-accent);
+  background: linear-gradient(
+    135deg,
+    rgba(212, 165, 165, 0.2) 0%,
+    rgba(212, 165, 165, 0.1) 100%
+  );
+}
+
+.order-info {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.order-details {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Motivos Section */
+.motivos-grid {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.motivo-item {
+  padding: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.motivo-item.selected {
+  border-color: var(--wine-primary);
+  background: linear-gradient(
+    135deg,
+    rgba(212, 165, 165, 0.2) 0%,
+    rgba(212, 165, 165, 0.1) 100%
+  );
+}
+
+.motivo-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.motivo-description {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.comment-input {
+  width: 100%;
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.comment-input:focus {
+  border-color: var(--wine-primary);
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+}
+
+/* Observations */
+.observation-section {
+  margin: 2rem 0;
+}
+
+.observation-label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+  font-size: 1.1rem;
+}
+
+.observation-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  resize: vertical;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.observation-textarea:focus {
+  border-color: var(--wine-primary);
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--wine-primary) 0%,
+    var(--wine-secondary) 100%
+  );
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(114, 47, 55, 0.2);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(
+    135deg,
+    var(--wine-secondary) 0%,
+    var(--wine-light) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(114, 47, 55, 0.3);
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-primary:disabled:hover {
+  background: #ccc;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+}
+
+/* Custom Radio and Checkbox Styles */
+input[type="radio"],
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--wine-primary);
+  cursor: pointer;
+}
+
+input[type="radio"]:checked,
+input[type="checkbox"]:checked {
+  background-color: var(--wine-primary);
+}
+
+/* Add some hover effects and improved spacing */
+.order-radio {
+  margin-right: 0.8rem !important;
+}
+
+/* Loading and Transition Effects */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Icons and Emojis */
+.emoji-icon {
+  margin-right: 0.5rem;
+  font-size: 1.1em;
+}
+
+/* Status indicators */
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--wine-accent);
+  color: var(--wine-dark);
+}
+
+/* Toast Notification Styles */
+.bg-wine {
+  background: linear-gradient(
+    135deg,
+    var(--wine-primary) 0%,
+    var(--wine-secondary) 100%
+  );
+}
+
+.text-wine-dark {
+  color: var(--wine-dark);
+}
+
+.text-wine-secondary {
+  color: var(--wine-secondary);
+}
+
+.border-wine-light {
+  border-color: var(--wine-light);
+}
+
+/* Animation classes for toast */
+.animate-enter {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-leave {
+  animation: slideOut 0.3s ease-in;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 2rem 1rem;
+  }
+
+  .form-section {
+    padding: 1.5rem;
+  }
+
+  .welcome-title {
+    font-size: 2rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .navbar h1 {
+    font-size: 1.5rem;
+  }
+}
