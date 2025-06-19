@@ -218,6 +218,25 @@
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
 }
 
+/* No Data Messages */
+.no-orders-message,
+.no-motives-message {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(212, 165, 165, 0.1);
+  border: 2px dashed var(--wine-light);
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.no-orders-message p,
+.no-motives-message p {
+  margin: 0;
+  font-style: italic;
+  color: var(--wine-secondary);
+  font-size: 1.1rem;
+}
+
 /* Action Buttons */
 .action-buttons {
   display: flex;

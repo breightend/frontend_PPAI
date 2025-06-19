@@ -13,17 +13,51 @@ function App() {
   const [mostrarMotivos, setMostrarMotivos] = useState(false);
   const [motivosSeleccionados, setMotivosSeleccionados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-//TODO: mostrar opcion de atualizar sismografo
+  //TODO: mostrar opcion de atualizar sismografo
   useEffect(() => {
     axios
       .get("http://localhost:5199/motivos")
-      .then((res) => setMotivos(res.data))
-      .catch((err) => console.error("Motivos:", err));
+      .then((res) => {
+        console.log("Respuesta completa de motivos:", res.data);
+
+        // Check if response has the expected structure with success and data
+        if (res.data && res.data.success && Array.isArray(res.data.data)) {
+          setMotivos(res.data.data);
+          console.log("Motivos cargados:", res.data.data);
+        } else if (Array.isArray(res.data)) {
+          // Fallback for direct array response
+          setMotivos(res.data);
+        } else {
+          console.error("Motivos response structure unexpected:", res.data);
+          setMotivos([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Error al cargar motivos:", err);
+        setMotivos([]);
+      });
 
     axios
       .get("http://localhost:5199/ordenes-inspeccion")
-      .then((res) => setOrdenes(res.data))
-      .catch((err) => console.error("Ordenes:", err));
+      .then((res) => {
+        console.log("Respuesta completa de órdenes:", res.data);
+
+        // Check if response has the expected structure with success and data
+        if (res.data && res.data.success && Array.isArray(res.data.data)) {
+          setOrdenes(res.data.data);
+          console.log("Órdenes cargadas:", res.data.data);
+        } else if (Array.isArray(res.data)) {
+          // Fallback for direct array response
+          setOrdenes(res.data);
+        } else {
+          console.error("Órdenes response structure unexpected:", res.data);
+          setOrdenes([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Error al cargar órdenes:", err);
+        setOrdenes([]);
+      });
   }, []);
 
   const handleMotivoChange = (id) => {
@@ -45,45 +79,47 @@ function App() {
 
   const enviarMotivos = async () => {
     try {
-      // Format the data to match the exact structure you specified
       const motivosData = {
-        motivos: motivosSeleccionados.map(motivo => ({
+        motivos: motivosSeleccionados.map((motivo) => ({
           idMotivo: motivo.idMotivo,
-          comentario: motivo.comentario || ""
-        }))
+          comentario: motivo.comentario || "",
+        })),
       };
-      
+
       console.log("Enviando motivos con formato:", motivosData);
-      
-      await axios.post("http://localhost:5199/motivos-seleccionados", motivosData);
+
+      await axios.post(
+        "http://localhost:5199/motivos-seleccionados",
+        motivosData
+      );
       console.log("Motivos enviados exitosamente");
     } catch (err) {
       console.error("Error al registrar motivos:", err);
-      throw err; 
+      throw err;
     }
   };
 
   const enviarobservacion = async () => {
     try {
       console.log("Enviando observación:", { observacion, ordenSeleccionada });
-      
+
       // Try sending data in the request body first
       await axios.post("http://localhost:5199/agregar-observacion", {
         orderId: ordenSeleccionada,
-        observation: observacion
+        observation: observacion,
       });
       console.log("Observación enviada exitosamente");
     } catch (err) {
       console.error("Error al enviar observación (método 1):", err);
-      
+
       // If the first method fails, try with query parameters
       try {
         console.log("Intentando método alternativo...");
         await axios.post("http://localhost:5199/agregar-observacion", null, {
-          params: { 
+          params: {
             Observacion: observacion,
-            OrdenId: ordenSeleccionada 
-          }
+            OrdenId: ordenSeleccionada,
+          },
         });
         console.log("Observación enviada exitosamente (método alternativo)");
       } catch (err2) {
@@ -120,7 +156,9 @@ function App() {
     }
 
     if (motivosSeleccionados.length === 0) {
-      setMensaje("Error: Debe seleccionar al menos un motivo fuera de servicio.");
+      setMensaje(
+        "Error: Debe seleccionar al menos un motivo fuera de servicio."
+      );
       return;
     }
 
@@ -133,28 +171,36 @@ function App() {
 
       // Send motivos first
       await enviarMotivos();
-      
+
       // Send observation if provided and we have a selected order
       if (observacion.trim() && ordenSeleccionada) {
         console.log("Enviando observación para orden:", ordenSeleccionada);
         await enviarobservacion();
       } else if (observacion.trim() && !ordenSeleccionada) {
-        console.warn("Observación proporcionada pero no hay orden seleccionada");
+        console.warn(
+          "Observación proporcionada pero no hay orden seleccionada"
+        );
       }
-    
+
       const res = await axios.post("http://localhost:5199/cerrar-orden", {
         ordenId: ordenSeleccionada,
         observation: observacion,
         motivos: motivosSeleccionados.map((m) => ({
           idMotivo: m.idMotivo,
-          comentario: m.comentario || ""
-        }))
-
+          comentario: m.comentario || "",
+        })),
       });
-      
+
       console.log("Respuesta del servidor:", res.data);
-      setMensaje(res.data);
-      
+
+      // Extract message from response object
+      const responseMessage =
+        typeof res.data === "object" && res.data !== null
+          ? res.data.message || res.data.cierre || JSON.stringify(res.data)
+          : res.data;
+
+      setMensaje(responseMessage);
+
       toast.custom((t) => (
         <div
           className={`${
@@ -171,13 +217,15 @@ function App() {
                 <div className="h-12 w-12 rounded-full bg-wine flex items-center justify-center text-white text-xl font-bold">
                   ✅
                 </div>
-              </div>
+              </div>{" "}
               <div className="ml-3 flex-1">
                 <p className="text-sm font-semibold text-wine-dark">
-                  🎉 ¡Cierre de orden exitoso!
+                  ¡Cierre de orden exitoso!
                 </p>
                 <p className="mt-1 text-sm text-wine-secondary">
-                  📧 Revisa tu email para más detalles
+                  {res.data && res.data.message
+                    ? res.data.message
+                    : "📧 Revisa tu email para más detalles"}
                 </p>
               </div>
             </div>
@@ -202,34 +250,38 @@ function App() {
         setMotivosSeleccionados([]);
         setMensaje("");
       }, 3000);
-
     } catch (error) {
       console.error("Error completo al cerrar orden:", error);
-      
+
       // Better error handling
       let errorMessage = "Error al cerrar orden.";
-      
+
       if (error.response) {
         // Server responded with error status
-        errorMessage = `Error del servidor: ${error.response.status} - ${error.response.data?.message || error.response.data || 'Error desconocido'}`;
+        errorMessage = `Error del servidor: ${error.response.status} - ${
+          error.response.data?.message ||
+          error.response.data ||
+          "Error desconocido"
+        }`;
       } else if (error.request) {
         // Request was made but no response received
-        errorMessage = "Error de conexión: No se pudo conectar con el servidor. Verifique que el backend esté ejecutándose en http://localhost:5199";
+        errorMessage =
+          "Error de conexión: No se pudo conectar con el servidor. Verifique que el backend esté ejecutándose en http://localhost:5199";
       } else {
         // Something else happened
         errorMessage = `Error inesperado: ${error.message}`;
       }
-      
+
       setMensaje(errorMessage);
-      
+
       // Show error toast
       toast.error(errorMessage, {
         duration: 6000,
         style: {
-          background: '#fee2e2',
-          color: '#dc2626',
-          border: '1px solid #fca5a5'
-        }
+          background: "#fee2e2",
+          color: "#dc2626",
+          border: "1px solid #fca5a5",
+        },
       });
     } finally {
       setIsLoading(false); // Stop loading regardless of success or failure
@@ -255,7 +307,7 @@ function App() {
               className="btn-primary"
               onClick={() => setMostrarFormulario(true)}
             >
-              📋 Cerrar Orden de Inspección
+              Cerrar Orden de Inspección
             </button>
           </div>
         )}
@@ -263,12 +315,11 @@ function App() {
         {mostrarFormulario && !mostrarMotivos && (
           <div className="form-section">
             <h2 className="section-title">Cerrar Orden de Inspección</h2>
-
-            {/* Order Selection */}
+            {/* Order Selection */}{" "}
             <div className="order-selection">
               <h3 className="text-wine">Seleccione una orden</h3>
               <div className="order-list">
-                {ordenes &&
+                {ordenes && Array.isArray(ordenes) && ordenes.length > 0 ? (
                   ordenes.map((orden) => (
                     <div
                       key={orden.numero}
@@ -285,26 +336,44 @@ function App() {
                           checked={ordenSeleccionada === orden.numero}
                           onChange={() => setOrdenSeleccionada(orden.numero)}
                           className="order-radio"
-                        />
+                        />{" "}
                         <div className="order-details">
                           <strong>#{orden.numero}</strong> -{" "}
                           {orden.nombreEstacion}
                           <br />
                           <small className="text-wine-light">
-                            📅 Inspección: {orden.fechaInspeccion} | Fin:{" "}
-                            {orden.fechaFin}
+                            Fecha Fin:{" "}
+                            {new Date(orden.fechaFin).toLocaleDateString(
+                              "es-ES",
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}{" "}
+                            | Sismógrafo: {orden.idSismografo}
                           </small>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <div className="no-orders-message">
+                    <p className="text-wine-light">
+                      {!ordenes
+                        ? "Cargando órdenes..."
+                        : "No hay órdenes de inspección disponibles"}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-
             {/* Observations Section */}
             <div className="observation-section">
               <label htmlFor="observacion" className="observation-label">
-                📝 observaciones
+                Observaciones
               </label>
               <textarea
                 id="observacion"
@@ -314,7 +383,6 @@ function App() {
                 onChange={(e) => setobservacion(e.target.value)}
               ></textarea>
             </div>
-
             <div className="action-buttons">
               <button
                 onClick={() => setMostrarMotivos(true)}
@@ -322,7 +390,7 @@ function App() {
                 disabled={!ordenSeleccionada}
                 type="button"
               >
-                Siguiente ➡️
+                Actualizar Sismógrafo
               </button>
             </div>
           </div>
@@ -333,9 +401,9 @@ function App() {
             <h2 className="section-title">Motivos Fuera de Servicio</h2>
 
             <div className="motivos-section">
-              <h3 className="text-wine">Seleccione los motivos aplicables</h3>
+              <h3 className="text-wine">Seleccione los motivos aplicables</h3>{" "}
               <div className="motivos-grid">
-                {motivos &&
+                {motivos && Array.isArray(motivos) && motivos.length > 0 ? (
                   motivos.map((m) => (
                     <div
                       key={m.id}
@@ -377,7 +445,16 @@ function App() {
                         />
                       )}
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <div className="no-motives-message">
+                    <p className="text-wine-light">
+                      {!motivos
+                        ? "Cargando motivos..."
+                        : "No hay motivos disponibles"}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
