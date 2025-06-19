@@ -13,7 +13,7 @@ function App() {
   const [mostrarMotivos, setMostrarMotivos] = useState(false);
   const [motivosSeleccionados, setMotivosSeleccionados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+//TODO: mostrar opcion de atualizar sismografo
   useEffect(() => {
     axios
       .get("http://localhost:5199/motivos")
@@ -93,6 +93,20 @@ function App() {
       }
     }
   };
+  const [confirmar, setConfirmar] = useState(false);
+  const enviarConfirmacion = async () => {
+    setConfirmar(true);
+    try {
+      await axios.post("http://localhost:5199/confirmar-cierre", {
+        confirmar: confirmar,
+      });
+      console.log("Confirmación enviada exitosamente");
+    } catch (err) {
+      console.error("Error al enviar confirmación:", err);
+      throw err;
+    }
+  };
+
   console.log("Orden seleccionada:", ordenSeleccionada);
   console.log("Observacion:", observacion);
   console.log("Motivos seleccionados:", motivosSeleccionados);
@@ -376,7 +390,10 @@ function App() {
                 ⬅️ Atrás
               </button>
               <button
-                onClick={cerrarOrden}
+                onClick={() => {
+                  cerrarOrden();
+                  enviarConfirmacion();
+                }}
                 className="btn-primary btn-success"
                 disabled={motivosSeleccionados.length === 0 || isLoading}
               >
@@ -386,7 +403,7 @@ function App() {
                     Procesando...
                   </>
                 ) : (
-                  "✅ Confirmar Cierre"
+                  "Confirmar Cierre"
                 )}
               </button>
             </div>
@@ -409,7 +426,7 @@ function App() {
 
         {mensaje && (
           <div className="message">
-            <strong>📢 {mensaje}</strong>
+            <strong> {mensaje}</strong>
           </div>
         )}
       </div>
