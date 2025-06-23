@@ -13,6 +13,7 @@ function App() {
   const [mostrarMotivos, setMostrarMotivos] = useState(false);
   const [motivosSeleccionados, setMotivosSeleccionados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOnlyUnavailable, setShowOnlyUnavailable] = useState(false);
   //TODO: mostrar opcion de atualizar sismografo
   useEffect(() => {
     axios
@@ -142,11 +143,15 @@ function App() {
       throw err;
     }
   };
-
   console.log("Orden seleccionada:", ordenSeleccionada);
   console.log("Observacion:", observacion);
   console.log("Motivos seleccionados:", motivosSeleccionados);
   console.log(observacion);
+
+  // Filter orders based on toggle state
+  const filteredOrdenes = showOnlyUnavailable
+    ? ordenes.filter((orden) => orden.estado === "no_disponible") // Simulate filtering unavailable orders
+    : ordenes;
 
   const cerrarOrden = async () => {
     // Validate required data
@@ -314,13 +319,31 @@ function App() {
 
         {mostrarFormulario && !mostrarMotivos && (
           <div className="form-section">
-            <h2 className="section-title">Cerrar Orden de Inspección</h2>
+            <h2 className="section-title">Cerrar Orden de Inspección</h2>{" "}
             {/* Order Selection */}{" "}
             <div className="order-selection">
-              <h3 className="text-wine">Seleccione una orden</h3>
+              <div className="order-header">
+                <h3 className="text-wine">Seleccione una orden</h3>
+                <div className="toggle-container">
+                  <label className="toggle-label">
+                    <input
+                      type="checkbox"
+                      checked={showOnlyUnavailable}
+                      onChange={(e) => setShowOnlyUnavailable(e.target.checked)}
+                      className="toggle-checkbox"
+                    />
+                    <span className="toggle-slider"></span>
+                    <span className="toggle-text">
+                      Mostrar solo órdenes no realizadas
+                    </span>
+                  </label>
+                </div>
+              </div>
               <div className="order-list">
-                {ordenes && Array.isArray(ordenes) && ordenes.length > 0 ? (
-                  ordenes.map((orden) => (
+                {filteredOrdenes &&
+                Array.isArray(filteredOrdenes) &&
+                filteredOrdenes.length > 0 ? (
+                  filteredOrdenes.map((orden) => (
                     <div
                       key={orden.numero}
                       className={`order-item ${
@@ -364,6 +387,8 @@ function App() {
                     <p className="text-wine-light">
                       {!ordenes
                         ? "Cargando órdenes..."
+                        : showOnlyUnavailable
+                        ? "❌ No se encontraron órdenes de inspección realizadas"
                         : "No hay órdenes de inspección disponibles"}
                     </p>
                   </div>

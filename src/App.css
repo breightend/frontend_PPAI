@@ -399,6 +399,89 @@ input[type="checkbox"]:checked {
   }
 }
 
+/* Order Header with Toggle */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Toggle Styles */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background: var(--border);
+  border-radius: 24px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+  background: var(--wine-primary);
+}
+
+.toggle-checkbox:checked + .toggle-slider::before {
+  transform: translateX(26px);
+}
+
+.toggle-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Responsive adjustments for toggle */
+@media (max-width: 768px) {
+  .order-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toggle-container {
+    justify-content: center;
+  }
+
+  .toggle-text {
+    font-size: 0.85rem;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .main-content {
