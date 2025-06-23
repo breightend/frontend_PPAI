@@ -234,6 +234,26 @@
   border-radius: 2px;
 }
 
+/* Section Header Styles */
+.section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 0.5rem;
+}
+
+.keyboard-hint {
+  color: var(--wine-light);
+  font-style: italic;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  background: rgba(114, 47, 55, 0.1);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(114, 47, 55, 0.2);
+}
+
 /* Order Selection */
 .order-list {
   display: grid;
@@ -383,6 +403,7 @@
   display: flex;
   gap: 1rem;
   justify-content: center;
+  flex-wrap: wrap;
   margin-top: 2rem;
 }
 
@@ -434,6 +455,15 @@
 
 .btn-success:hover {
   background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+}
+
+.action-buttons .btn-secondary[style] {
+  color: white;
+}
+
+.action-buttons .btn-secondary[style]:hover {
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
 }
 
 /* Custom Radio and Checkbox Styles */

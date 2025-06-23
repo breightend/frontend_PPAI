@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import "./App.css";
@@ -15,7 +15,60 @@ function App() {
   const [motivosSeleccionados, setMotivosSeleccionados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showOnlyUnavailable, setShowOnlyUnavailable] = useState(false);
+  // Function to cancel and reset the entire operation
+  const cancelOperation = useCallback(() => {
+    // Check if user has entered any data
+    const hasData =
+      ordenSeleccionada ||
+      observacion.trim() ||
+      motivosSeleccionados.length > 0;
+
+    if (hasData) {
+      const confirmCancel = window.confirm(
+        "¿Está seguro que desea cancelar la operación? Se perderán todos los datos ingresados."
+      );
+      if (!confirmCancel) {
+        return;
+      }
+    }
+
+    setMostrarFormulario(false);
+    setMostrarMotivos(false);
+    setOrdenSeleccionada(null);
+    setobservacion("");
+    setMotivosSeleccionados([]);
+    setMensaje("");
+    setIsLoading(false);
+    setShowOnlyUnavailable(false);
+
+    // Show cancellation feedback
+    toast.success("Operación cancelada correctamente", {
+      duration: 3000,
+      style: {
+        background: "#f0f9ff",
+        color: "#0369a1",
+        border: "1px solid #0ea5e9",
+      },
+    });
+  }, [ordenSeleccionada, observacion, motivosSeleccionados]);
   //TODO: mostrar opcion de atualizar sismografo
+  useEffect(() => {
+    // Add keyboard shortcut for canceling (Escape key)
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && (mostrarFormulario || mostrarMotivos)) {
+        event.preventDefault();
+        cancelOperation();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mostrarFormulario, mostrarMotivos, cancelOperation]);
+
   useEffect(() => {
     axios
       .get("http://localhost:5199/empleado-logueado")
@@ -364,11 +417,15 @@ function App() {
               Cerrar Orden de Inspección
             </button>
           </div>
-        )}
-
+        )}{" "}
         {mostrarFormulario && !mostrarMotivos && (
           <div className="form-section">
-            <h2 className="section-title">Cerrar Orden de Inspección</h2>{" "}
+            <div className="section-header">
+              <h2 className="section-title">Cerrar Orden de Inspección</h2>
+              <small className="keyboard-hint">
+                Presiona Escape para cancelar
+              </small>
+            </div>{" "}
             {/* Order Selection */}{" "}
             <div className="order-selection">
               <div className="order-header">
@@ -455,9 +512,16 @@ function App() {
                 placeholder="Ingrese sus observaciones detalladas sobre la inspección..."
                 value={observacion}
                 onChange={(e) => setobservacion(e.target.value)}
-              ></textarea>
+              ></textarea>{" "}
             </div>
             <div className="action-buttons">
+              <button
+                onClick={cancelOperation}
+                className="btn-secondary"
+                type="button"
+              >
+                ❌ Cancelar Operación
+              </button>
               <button
                 onClick={() => setMostrarMotivos(true)}
                 className="btn-primary"
@@ -468,12 +532,15 @@ function App() {
               </button>
             </div>
           </div>
-        )}
-
+        )}{" "}
         {mostrarFormulario && mostrarMotivos && (
           <div className="form-section">
-            <h2 className="section-title">Motivos Fuera de Servicio</h2>
-
+            <div className="section-header">
+              <h2 className="section-title">Motivos Fuera de Servicio</h2>
+              <small className="keyboard-hint">
+                Presiona Escape para cancelar
+              </small>
+            </div>
             <div className="motivos-section">
               <h3 className="text-wine">Seleccione los motivos aplicables</h3>{" "}
               <div className="motivos-grid">
@@ -530,8 +597,7 @@ function App() {
                   </div>
                 )}
               </div>
-            </div>
-
+            </div>{" "}
             <div className="action-buttons">
               <button
                 onClick={() => setMostrarMotivos(false)}
@@ -539,6 +605,14 @@ function App() {
                 disabled={isLoading}
               >
                 ⬅️ Atrás
+              </button>
+              <button
+                onClick={cancelOperation}
+                className="btn-secondary"
+                disabled={isLoading}
+                style={{ backgroundColor: "#672930" }}
+              >
+                ❌ Cancelar Operación
               </button>
               <button
                 onClick={() => {
@@ -574,7 +648,6 @@ function App() {
             />
           </div>
         )}
-
         {mensaje && (
           <div className="message">
             <strong> {mensaje}</strong>
