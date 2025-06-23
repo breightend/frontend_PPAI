@@ -5,6 +5,7 @@ import "./App.css";
 
 function App() {
   const [motivos, setMotivos] = useState([]);
+  const [usuario, setUsuario] = useState(null);
   const [ordenes, setOrdenes] = useState([]);
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
   const [observacion, setobservacion] = useState("");
@@ -16,6 +17,27 @@ function App() {
   const [showOnlyUnavailable, setShowOnlyUnavailable] = useState(false);
   //TODO: mostrar opcion de atualizar sismografo
   useEffect(() => {
+    axios
+      .get("http://localhost:5199/empleado-logueado")
+      .then((res) => {
+        console.log("Respuesta completa de usuario:", res.data);
+
+        // Check if response has the expected structure with success and data
+        if (res.data && res.data.success && res.data.data) {
+          setUsuario(res.data.data);
+          console.log("Usuario cargado:", res.data.data);
+        } else if (res.data && res.data.nombre) {
+          setUsuario(res.data);
+        } else {
+          console.error("Usuario response structure unexpected:", res.data);
+          setUsuario(null);
+        }
+      })
+      .catch((err) => {
+        console.error("Error al cargar usuario:", err);
+        setUsuario(null);
+      });
+
     axios
       .get("http://localhost:5199/motivos")
       .then((res) => {
@@ -292,12 +314,39 @@ function App() {
       setIsLoading(false); // Stop loading regardless of success or failure
     }
   };
-
   return (
     <div id="root">
       {/* Navigation Bar */}
       <nav className="navbar">
         <h1>Red Sísmica</h1>
+        {/* User Avatar */}
+        <div className="user-avatar-container">
+          <div className="user-avatar">
+            <span className="avatar-initials">
+              {usuario && usuario.nombre && usuario.apellido
+                ? `${usuario.nombre.charAt(0)}${usuario.apellido.charAt(0)}`
+                : "U"}
+            </span>
+            <div className="user-tooltip">
+              <div className="tooltip-content">
+                {usuario && usuario.nombre ? (
+                  <>
+                    <div className="user-name">
+                      {usuario.nombre} {usuario.apellido}
+                    </div>
+                    <div className="user-role">{usuario.rol}</div>
+                    <div className="user-contact">
+                      <div className="user-email">{usuario.mail}</div>
+                      <div className="user-phone">{usuario.telefono}</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="user-loading">Cargando usuario...</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </nav>
 
       {/* Main Content */}
