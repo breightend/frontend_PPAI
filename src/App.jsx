@@ -44,10 +44,6 @@ function App() {
     setIsLoading(false);
     setShowOnlyUnavailable(false);
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 1967872 (lista alternativas 4 y 6)
     toast.success("Operación cancelada correctamente", {
       duration: 3000,
       style: {
@@ -57,10 +53,6 @@ function App() {
       },
     });
   }, [ordenSeleccionada, observacion, motivosSeleccionados]);
-<<<<<<< HEAD
-=======
-
->>>>>>> 1967872 (lista alternativas 4 y 6)
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && (mostrarFormulario || mostrarMotivos)) {
