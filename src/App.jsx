@@ -15,9 +15,9 @@ function App() {
   const [motivosSeleccionados, setMotivosSeleccionados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showOnlyUnavailable, setShowOnlyUnavailable] = useState(false);
-  // Function to cancel and reset the entire operation
+
   const cancelOperation = useCallback(() => {
-    // Check if user has entered any data
+
     const hasData =
       ordenSeleccionada ||
       observacion.trim() ||
@@ -41,7 +41,6 @@ function App() {
     setIsLoading(false);
     setShowOnlyUnavailable(false);
 
-    // Show cancellation feedback
     toast.success("Operación cancelada correctamente", {
       duration: 3000,
       style: {
@@ -51,9 +50,7 @@ function App() {
       },
     });
   }, [ordenSeleccionada, observacion, motivosSeleccionados]);
-  //TODO: mostrar opcion de atualizar sismografo
   useEffect(() => {
-    // Add keyboard shortcut for canceling (Escape key)
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && (mostrarFormulario || mostrarMotivos)) {
         event.preventDefault();
@@ -63,7 +60,6 @@ function App() {
 
     document.addEventListener("keydown", handleKeyDown);
 
-    // Cleanup event listener
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -118,12 +114,10 @@ function App() {
       .then((res) => {
         console.log("Respuesta completa de órdenes:", res.data);
 
-        // Check if response has the expected structure with success and data
         if (res.data && res.data.success && Array.isArray(res.data.data)) {
           setOrdenes(res.data.data);
           console.log("Órdenes cargadas:", res.data.data);
         } else if (Array.isArray(res.data)) {
-          // Fallback for direct array response
           setOrdenes(res.data);
         } else {
           console.error("Órdenes response structure unexpected:", res.data);
