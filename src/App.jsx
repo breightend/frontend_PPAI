@@ -15,6 +15,9 @@ function App() {
   const [motivosSeleccionados, setMotivosSeleccionados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showOnlyUnavailable, setShowOnlyUnavailable] = useState(false);
+  const [enviarMail, setEnviarMail] = useState(false);
+  const [enviarMonitores, setEnviarMonitores] = useState(false);
+
 
   const cancelOperation = useCallback(() => {
 
@@ -41,6 +44,10 @@ function App() {
     setIsLoading(false);
     setShowOnlyUnavailable(false);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1967872 (lista alternativas 4 y 6)
     toast.success("Operación cancelada correctamente", {
       duration: 3000,
       style: {
@@ -50,6 +57,10 @@ function App() {
       },
     });
   }, [ordenSeleccionada, observacion, motivosSeleccionados]);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1967872 (lista alternativas 4 y 6)
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && (mostrarFormulario || mostrarMotivos)) {
@@ -71,7 +82,6 @@ function App() {
       .then((res) => {
         console.log("Respuesta completa de usuario:", res.data);
 
-        // Check if response has the expected structure with success and data
         if (res.data && res.data.success && res.data.data) {
           setUsuario(res.data.data);
           console.log("Usuario cargado:", res.data.data);
@@ -92,12 +102,11 @@ function App() {
       .then((res) => {
         console.log("Respuesta completa de motivos:", res.data);
 
-        // Check if response has the expected structure with success and data
         if (res.data && res.data.success && Array.isArray(res.data.data)) {
           setMotivos(res.data.data);
           console.log("Motivos cargados:", res.data.data);
         } else if (Array.isArray(res.data)) {
-          // Fallback for direct array response
+
           setMotivos(res.data);
         } else {
           console.error("Motivos response structure unexpected:", res.data);
@@ -173,7 +182,6 @@ function App() {
     try {
       console.log("Enviando observación:", { observacion, ordenSeleccionada });
 
-      // Try sending data in the request body first
       await axios.post("http://localhost:5199/agregar-observacion", {
         orderId: ordenSeleccionada,
         observation: observacion,
@@ -182,7 +190,6 @@ function App() {
     } catch (err) {
       console.error("Error al enviar observación (método 1):", err);
 
-      // If the first method fails, try with query parameters
       try {
         console.log("Intentando método alternativo...");
         await axios.post("http://localhost:5199/agregar-observacion", null, {
@@ -195,7 +202,7 @@ function App() {
       } catch (err2) {
         console.error("Error al enviar observación (método 2):", err2);
         console.error("Datos enviados:", { observacion, ordenSeleccionada });
-        throw err2; // Re-throw the second error
+        throw err2;
       }
     }
   };
@@ -217,13 +224,11 @@ function App() {
   console.log("Motivos seleccionados:", motivosSeleccionados);
   console.log(observacion);
 
-  // Filter orders based on toggle state
   const filteredOrdenes = showOnlyUnavailable
-    ? ordenes.filter((orden) => orden.estado === "no_disponible") // Simulate filtering unavailable orders
+    ? ordenes.filter((orden) => orden.estado === "no_disponible") 
     : ordenes;
 
   const cerrarOrden = async () => {
-    // Validate required data
     if (!ordenSeleccionada) {
       setMensaje("Error: Debe seleccionar una orden antes de cerrarla.");
       return;
@@ -236,17 +241,21 @@ function App() {
       return;
     }
 
-    setIsLoading(true); // Start loading
+    if (!enviarMail && !enviarMonitores) {
+    setMensaje("Debe seleccionar al menos una opción: enviar mail o publicar en monitores.");
+    toast.error("Debe seleccionar al menos una opción: enviar mail o publicar en monitores.");
+    return;
+  }
+
+    setIsLoading(true);
 
     try {
       console.log("Iniciando cierre de orden:", ordenSeleccionada);
       console.log("Motivos seleccionados:", motivosSeleccionados);
       console.log("Observación:", observacion);
 
-      // Send motivos first
       await enviarMotivos();
 
-      // Send observation if provided and we have a selected order
       if (observacion.trim() && ordenSeleccionada) {
         console.log("Enviando observación para orden:", ordenSeleccionada);
         await enviarobservacion();
@@ -263,11 +272,12 @@ function App() {
           idMotivo: m.idMotivo,
           comentario: m.comentario || "",
         })),
+        enviarMail: enviarMail,           
+        enviarMonitores: enviarMonitores, 
       });
 
       console.log("Respuesta del servidor:", res.data);
 
-      // Extract message from response object
       const responseMessage =
         typeof res.data === "object" && res.data !== null
           ? res.data.message || res.data.cierre || JSON.stringify(res.data)
@@ -275,16 +285,27 @@ function App() {
 
       setMensaje(responseMessage);
 
-      toast.custom((t) => (
-        <div
-          className={`${
-            t.visible ? "animate-enter" : "animate-leave"
-          } max-w-md w-full bg-white shadow-xl rounded-xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}
-          style={{
-            background: "linear-gradient(135deg, white 0%, #fdf8f8 100%)",
-            border: "2px solid var(--wine-light)",
-          }}
-        >
+      toast.custom((t) => {
+        let extraMsg = "";
+        if (enviarMail && enviarMonitores) {
+          extraMsg = "📧 Notificación enviada por mail y publicada en monitores.";
+        } else if (enviarMail) {
+          extraMsg = "📧 Notificación enviada por mail.";
+        } else if (enviarMonitores) {
+          extraMsg = "🖥️ Publicada en monitores.";
+        } else {
+          extraMsg = "No se envió notificación.";
+        }
+        return (
+          <div
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } max-w-md w-full bg-white shadow-xl rounded-xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}
+            style={{
+              background: "linear-gradient(135deg, white 0%, #fdf8f8 100%)",
+              border: "2px solid var(--wine-light)",
+            }}
+          >
           <div className="flex-1 w-0 p-4">
             <div className="flex items-start">
               <div className="flex-shrink-0 pt-0.5">
@@ -301,6 +322,7 @@ function App() {
                     ? res.data.message
                     : "📧 Revisa tu email para más detalles"}
                 </p>
+                <p className="mt-2 text-xs text-wine-secondary">{extraMsg}</p>
               </div>
             </div>
           </div>
@@ -313,9 +335,9 @@ function App() {
             </button>
           </div>
         </div>
-      ));
+      );
+    });
 
-      // Reset form after successful submission
       setTimeout(() => {
         setMostrarFormulario(false);
         setMostrarMotivos(false);
@@ -327,28 +349,23 @@ function App() {
     } catch (error) {
       console.error("Error completo al cerrar orden:", error);
 
-      // Better error handling
       let errorMessage = "Error al cerrar orden.";
 
       if (error.response) {
-        // Server responded with error status
         errorMessage = `Error del servidor: ${error.response.status} - ${
           error.response.data?.message ||
           error.response.data ||
           "Error desconocido"
         }`;
       } else if (error.request) {
-        // Request was made but no response received
         errorMessage =
           "Error de conexión: No se pudo conectar con el servidor. Verifique que el backend esté ejecutándose en http://localhost:5199";
       } else {
-        // Something else happened
         errorMessage = `Error inesperado: ${error.message}`;
       }
 
       setMensaje(errorMessage);
 
-      // Show error toast
       toast.error(errorMessage, {
         duration: 6000,
         style: {
@@ -358,15 +375,13 @@ function App() {
         },
       });
     } finally {
-      setIsLoading(false); // Stop loading regardless of success or failure
+      setIsLoading(false);
     }
   };
   return (
     <div id="root">
-      {/* Navigation Bar */}
       <nav className="navbar">
         <h1>Red Sísmica</h1>
-        {/* User Avatar */}
         <div className="user-avatar-container">
           <div className="user-avatar">
             <span className="avatar-initials">
@@ -396,7 +411,6 @@ function App() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="main-content">
         {!mostrarFormulario && (
           <div className="welcome-section">
@@ -495,7 +509,6 @@ function App() {
                 )}
               </div>
             </div>
-            {/* Observations Section */}
             <div className="observation-section">
               <label htmlFor="observacion" className="observation-label">
                 Observaciones
@@ -525,6 +538,7 @@ function App() {
                 Actualizar Sismógrafo
               </button>
             </div>
+            
           </div>
         )}{" "}
         {mostrarFormulario && mostrarMotivos && (
@@ -625,6 +639,26 @@ function App() {
                   "Confirmar Cierre"
                 )}
               </button>
+              <div style={{ margin: "16px 0" }}>
+              <label style={{ marginRight: "24px" }}>
+                <input
+                  type="checkbox"
+                  checked={enviarMail}
+                  onChange={e => setEnviarMail(e.target.checked)}
+                  style={{ marginRight: "8px" }}
+                />
+                Enviar notificación por mail
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={enviarMonitores}
+                  onChange={e => setEnviarMonitores(e.target.checked)}
+                  style={{ marginRight: "8px" }}
+                />
+                Publicar en monitores
+              </label>
+            </div>
             </div>
             <Toaster
               position="bottom-right"

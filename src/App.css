@@ -3,7 +3,6 @@
   background: linear-gradient(135deg, #fdf8f8 0%, #f5f0f0 100%);
 }
 
-/* Navbar Styles */
 .navbar {
   background: linear-gradient(
     135deg,
@@ -30,7 +29,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Navbar User Avatar */
 .user-avatar-container {
   position: relative;
 }
@@ -68,7 +66,6 @@
   letter-spacing: 0.5px;
 }
 
-/* User Tooltip */
 .user-tooltip {
   position: absolute;
   top: 100%;
@@ -142,7 +139,6 @@
   text-align: center;
 }
 
-/* Tooltip Arrow */
 .user-tooltip::before {
   content: "";
   position: absolute;
@@ -168,7 +164,6 @@
   border-bottom: 8px solid var(--wine-light);
 }
 
-/* Main Content */
 .main-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -176,7 +171,6 @@
   min-height: calc(100vh - 120px);
 }
 
-/* Welcome Section */
 .welcome-section {
   text-align: center;
   margin-bottom: 3rem;
@@ -198,7 +192,6 @@
   margin-right: auto;
 }
 
-/* Form Sections */
 .form-section {
   background: white;
   border-radius: 20px;
@@ -234,7 +227,6 @@
   border-radius: 2px;
 }
 
-/* Section Header Styles */
 .section-header {
   display: flex;
   flex-direction: column;
@@ -254,7 +246,6 @@
   border: 1px solid rgba(114, 47, 55, 0.2);
 }
 
-/* Order Selection */
 .order-list {
   display: grid;
   gap: 1rem;
@@ -298,7 +289,6 @@
   color: var(--text-primary);
 }
 
-/* Motivos Section */
 .motivos-grid {
   display: grid;
   gap: 1rem;
@@ -349,7 +339,6 @@
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
 }
 
-/* Observations */
 .observation-section {
   margin: 2rem 0;
 }
@@ -379,7 +368,6 @@
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
 }
 
-/* No Data Messages */
 .no-orders-message,
 .no-motives-message {
   text-align: center;
@@ -398,7 +386,6 @@
   font-size: 1.1rem;
 }
 
-/* Action Buttons */
 .action-buttons {
   display: flex;
   gap: 1rem;
@@ -466,7 +453,6 @@
   border-color: #bd2130 !important;
 }
 
-/* Custom Radio and Checkbox Styles */
 input[type="radio"],
 input[type="checkbox"] {
   width: 20px;
@@ -480,12 +466,10 @@ input[type="checkbox"]:checked {
   background-color: var(--wine-primary);
 }
 
-/* Add some hover effects and improved spacing */
 .order-radio {
   margin-right: 0.8rem !important;
 }
 
-/* Loading and Transition Effects */
 .fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
@@ -501,13 +485,11 @@ input[type="checkbox"]:checked {
   }
 }
 
-/* Icons and Emojis */
 .emoji-icon {
   margin-right: 0.5rem;
   font-size: 1.1em;
 }
 
-/* Status indicators */
 .status-badge {
   display: inline-block;
   padding: 0.3rem 0.8rem;
@@ -518,7 +500,6 @@ input[type="checkbox"]:checked {
   color: var(--wine-dark);
 }
 
-/* Toast Notification Styles */
 .bg-wine {
   background: linear-gradient(
     135deg,
@@ -539,7 +520,6 @@ input[type="checkbox"]:checked {
   border-color: var(--wine-light);
 }
 
-/* Animation classes for toast */
 .animate-enter {
   animation: slideIn 0.3s ease-out;
 }
@@ -570,7 +550,6 @@ input[type="checkbox"]:checked {
   }
 }
 
-/* Order Header with Toggle */
 .order-header {
   display: flex;
   justify-content: space-between;
@@ -580,7 +559,6 @@ input[type="checkbox"]:checked {
   gap: 1rem;
 }
 
-/* Toggle Styles */
 .toggle-container {
   display: flex;
   align-items: center;
@@ -637,7 +615,6 @@ input[type="checkbox"]:checked {
   white-space: nowrap;
 }
 
-/* Responsive adjustments for toggle */
 @media (max-width: 768px) {
   .order-header {
     flex-direction: column;
@@ -653,7 +630,6 @@ input[type="checkbox"]:checked {
   }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .main-content {
     padding: 2rem 1rem;
