@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import "./App.css";
 import { fetchData, postData } from "./services/service";
+import { useLocation } from "wouter";
 
 function App() {
   const [motivos, setMotivos] = useState([]);
@@ -17,6 +18,7 @@ function App() {
   const [showOnlyUnavailable, setShowOnlyUnavailable] = useState(false);
   const [enviarMail, setEnviarMail] = useState(false);
   const [enviarMonitores, setEnviarMonitores] = useState(false);
+  const [location, setLocation] = useLocation();
 
   const cancelOperation = useCallback(() => {
     const hasData =
@@ -31,6 +33,10 @@ function App() {
       if (!confirmCancel) {
         return;
       }
+    }
+
+    const handleMonitorClick = () => {
+      setLocation("/monitores");
     }
 
     setMostrarFormulario(false);
@@ -183,7 +189,6 @@ function App() {
     try {
       console.log("Enviando observación:", { observacion, ordenSeleccionada });
 
-      // Prefer using postData helper which uses API_BASE_URL and consistent error handling
       await postData("/agregar-observacion", {
         orderId: ordenSeleccionada,
         observation: observacion,
@@ -389,6 +394,9 @@ function App() {
     <div id="root">
       <nav className="navbar">
         <h1>Red Sísmica</h1>
+        <button className="btn-monitores" onClick={handleMonitorClick}>
+          Ver Monitores
+        </button>
         <div className="user-avatar-container">
           <div className="user-avatar">
             <span className="avatar-initials">

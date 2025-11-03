@@ -26,3 +26,5 @@ export const postData = async (endpoint, data = {}, config = {}) => {
     throw error;
   }
 };
+
+
