@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import "./App.css";
+import { fetchData, postData } from "./services/service";
 
 function App() {
   const [motivos, setMotivos] = useState([]);
@@ -18,9 +18,7 @@ function App() {
   const [enviarMail, setEnviarMail] = useState(false);
   const [enviarMonitores, setEnviarMonitores] = useState(false);
 
-
   const cancelOperation = useCallback(() => {
-
     const hasData =
       ordenSeleccionada ||
       observacion.trim() ||
@@ -69,66 +67,79 @@ function App() {
   }, [mostrarFormulario, mostrarMotivos, cancelOperation]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5199/empleado-logueado")
-      .then((res) => {
-        console.log("Respuesta completa de usuario:", res.data);
+    const fetchEmpleado = async () => {
+      try {
+        const usuarioData = await fetchData("/empleado-logueado");
+        console.log("Respuesta completa de usuario:", usuarioData);
 
-        if (res.data && res.data.success && res.data.data) {
-          setUsuario(res.data.data);
-          console.log("Usuario cargado:", res.data.data);
-        } else if (res.data && res.data.nombre) {
-          setUsuario(res.data);
+        if (usuarioData && usuarioData.success && usuarioData.data) {
+          setUsuario(usuarioData.data);
+          console.log("Usuario cargado:", usuarioData.data);
+        } else if (usuarioData && usuarioData.nombre) {
+          setUsuario(usuarioData);
         } else {
-          console.error("Usuario response structure unexpected:", res.data);
+          console.error("Usuario response structure unexpected:", usuarioData);
           setUsuario(null);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error al cargar usuario:", err);
         setUsuario(null);
-      });
+      }
+    };
 
-    axios
-      .get("http://localhost:5199/motivos")
-      .then((res) => {
-        console.log("Respuesta completa de motivos:", res.data);
+    fetchEmpleado();
 
-        if (res.data && res.data.success && Array.isArray(res.data.data)) {
-          setMotivos(res.data.data);
-          console.log("Motivos cargados:", res.data.data);
-        } else if (Array.isArray(res.data)) {
+    const fetchMotivos = async () => {
+      try {
+        const motivosData = await fetchData("/motivos");
+        console.log("Respuesta completa de motivos:", motivosData);
 
-          setMotivos(res.data);
+        if (
+          motivosData &&
+          motivosData.success &&
+          Array.isArray(motivosData.data)
+        ) {
+          setMotivos(motivosData.data);
+          console.log("Motivos cargados:", motivosData.data);
+        } else if (Array.isArray(motivosData)) {
+          setMotivos(motivosData);
         } else {
-          console.error("Motivos response structure unexpected:", res.data);
+          console.error("Motivos response structure unexpected:", motivosData);
           setMotivos([]);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error al cargar motivos:", err);
         setMotivos([]);
-      });
+      }
+    };
 
-    axios
-      .get("http://localhost:5199/ordenes-inspeccion")
-      .then((res) => {
-        console.log("Respuesta completa de órdenes:", res.data);
+    fetchMotivos();
 
-        if (res.data && res.data.success && Array.isArray(res.data.data)) {
-          setOrdenes(res.data.data);
-          console.log("Órdenes cargadas:", res.data.data);
-        } else if (Array.isArray(res.data)) {
-          setOrdenes(res.data);
+    const fetchOrdenes = async () => {
+      try {
+        const ordenesData = await fetchData("/ordenes-inspeccion");
+        console.log("Respuesta completa de órdenes:", ordenesData);
+
+        if (
+          ordenesData &&
+          ordenesData.success &&
+          Array.isArray(ordenesData.data)
+        ) {
+          setOrdenes(ordenesData.data);
+          console.log("Órdenes cargadas:", ordenesData.data);
+        } else if (Array.isArray(ordenesData)) {
+          setOrdenes(ordenesData);
         } else {
-          console.error("Órdenes response structure unexpected:", res.data);
+          console.error("Órdenes response structure unexpected:", ordenesData);
           setOrdenes([]);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error al cargar órdenes:", err);
         setOrdenes([]);
-      });
+      }
+    };
+
+    fetchOrdenes();
   }, []);
 
   const handleMotivoChange = (id) => {
@@ -159,10 +170,8 @@ function App() {
 
       console.log("Enviando motivos con formato:", motivosData);
 
-      await axios.post(
-        "http://localhost:5199/motivos-seleccionados",
-        motivosData
-      );
+      const response = await postData("/motivos-seleccionados", motivosData);
+
       console.log("Motivos enviados exitosamente");
     } catch (err) {
       console.error("Error al registrar motivos:", err);
@@ -174,7 +183,8 @@ function App() {
     try {
       console.log("Enviando observación:", { observacion, ordenSeleccionada });
 
-      await axios.post("http://localhost:5199/agregar-observacion", {
+      // Prefer using postData helper which uses API_BASE_URL and consistent error handling
+      await postData("/agregar-observacion", {
         orderId: ordenSeleccionada,
         observation: observacion,
       });
@@ -183,8 +193,8 @@ function App() {
       console.error("Error al enviar observación (método 1):", err);
 
       try {
-        console.log("Intentando método alternativo...");
-        await axios.post("http://localhost:5199/agregar-observacion", null, {
+        console.log("Intentando método alternativo con params...");
+        await postData("/agregar-observacion", null, {
           params: {
             Observacion: observacion,
             OrdenId: ordenSeleccionada,
@@ -202,7 +212,7 @@ function App() {
   const enviarConfirmacion = async () => {
     setConfirmar(true);
     try {
-      await axios.post("http://localhost:5199/confirmar-cierre", {
+      await postData("/confirmar-cierre", {
         confirmar: confirmar,
       });
       console.log("Confirmación enviada exitosamente");
@@ -217,7 +227,7 @@ function App() {
   console.log(observacion);
 
   const filteredOrdenes = showOnlyUnavailable
-    ? ordenes.filter((orden) => orden.estado === "no_disponible") 
+    ? ordenes.filter((orden) => orden.estado === "no_disponible")
     : ordenes;
 
   const cerrarOrden = async () => {
@@ -234,10 +244,14 @@ function App() {
     }
 
     if (!enviarMail && !enviarMonitores) {
-    setMensaje("Debe seleccionar al menos una opción: enviar mail o publicar en monitores.");
-    toast.error("Debe seleccionar al menos una opción: enviar mail o publicar en monitores.");
-    return;
-  }
+      setMensaje(
+        "Debe seleccionar al menos una opción: enviar mail o publicar en monitores."
+      );
+      toast.error(
+        "Debe seleccionar al menos una opción: enviar mail o publicar en monitores."
+      );
+      return;
+    }
 
     setIsLoading(true);
 
@@ -257,30 +271,31 @@ function App() {
         );
       }
 
-      const res = await axios.post("http://localhost:5199/cerrar-orden", {
+      const resData = await postData("/cerrar-orden", {
         ordenId: ordenSeleccionada,
         observation: observacion,
         motivos: motivosSeleccionados.map((m) => ({
           idMotivo: m.idMotivo,
           comentario: m.comentario || "",
         })),
-        enviarMail: enviarMail,           
-        enviarMonitores: enviarMonitores, 
+        enviarMail: enviarMail,
+        enviarMonitores: enviarMonitores,
       });
 
-      console.log("Respuesta del servidor:", res.data);
+      console.log("Respuesta del servidor:", resData);
 
       const responseMessage =
-        typeof res.data === "object" && res.data !== null
-          ? res.data.message || res.data.cierre || JSON.stringify(res.data)
-          : res.data;
+        typeof resData === "object" && resData !== null
+          ? resData.message || resData.cierre || JSON.stringify(resData)
+          : resData;
 
       setMensaje(responseMessage);
 
       toast.custom((t) => {
         let extraMsg = "";
         if (enviarMail && enviarMonitores) {
-          extraMsg = "📧 Notificación enviada por mail y publicada en monitores.";
+          extraMsg =
+            "📧 Notificación enviada por mail y publicada en monitores.";
         } else if (enviarMail) {
           extraMsg = "📧 Notificación enviada por mail.";
         } else if (enviarMonitores) {
@@ -298,37 +313,37 @@ function App() {
               border: "2px solid var(--wine-light)",
             }}
           >
-          <div className="flex-1 w-0 p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 pt-0.5">
-                <div className="h-12 w-12 rounded-full bg-wine flex items-center justify-center text-white text-xl font-bold">
-                  ✅
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  <div className="h-12 w-12 rounded-full bg-wine flex items-center justify-center text-white text-xl font-bold">
+                    ✅
+                  </div>
+                </div>{" "}
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-semibold text-wine-dark">
+                    ¡Cierre de orden exitoso!
+                  </p>
+                  <p className="mt-1 text-sm text-wine-secondary">
+                    {resData && resData.message
+                      ? resData.message
+                      : "📧 Revisa tu email para más detalles"}
+                  </p>
+                  <p className="mt-2 text-xs text-wine-secondary">{extraMsg}</p>
                 </div>
-              </div>{" "}
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-semibold text-wine-dark">
-                  ¡Cierre de orden exitoso!
-                </p>
-                <p className="mt-1 text-sm text-wine-secondary">
-                  {res.data && res.data.message
-                    ? res.data.message
-                    : "📧 Revisa tu email para más detalles"}
-                </p>
-                <p className="mt-2 text-xs text-wine-secondary">{extraMsg}</p>
               </div>
             </div>
+            <div className="flex border-l border-wine-light">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-xl p-4 flex items-center justify-center text-sm font-medium text-wine-primary hover:text-wine-secondary focus:outline-none focus:ring-2 focus:ring-wine-primary transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
-          <div className="flex border-l border-wine-light">
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="w-full border border-transparent rounded-none rounded-r-xl p-4 flex items-center justify-center text-sm font-medium text-wine-primary hover:text-wine-secondary focus:outline-none focus:ring-2 focus:ring-wine-primary transition-colors"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      );
-    });
+        );
+      });
 
       setTimeout(() => {
         setMostrarFormulario(false);
@@ -494,7 +509,7 @@ function App() {
                       {!ordenes
                         ? "Cargando órdenes..."
                         : showOnlyUnavailable
-                        ? "❌ No se encontraron órdenes de inspección realizadas"
+                        ? " No se encontraron órdenes de inspección realizadas"
                         : "No hay órdenes de inspección disponibles"}
                     </p>
                   </div>
@@ -519,7 +534,7 @@ function App() {
                 className="btn-secondary"
                 type="button"
               >
-                ❌ Cancelar Operación
+                Cancelar Operación
               </button>
               <button
                 onClick={() => setMostrarMotivos(true)}
@@ -530,7 +545,6 @@ function App() {
                 Actualizar Sismógrafo
               </button>
             </div>
-            
           </div>
         )}{" "}
         {mostrarFormulario && mostrarMotivos && (
@@ -565,7 +579,7 @@ function App() {
                           onChange={() => handleMotivoChange(m.id)}
                         />
                         <span className="motivo-description">
-                          ⚠️ {m.descripcion}
+                          {m.descripcion}
                         </span>
                       </div>
                       {motivosSeleccionados.some(
@@ -604,7 +618,7 @@ function App() {
                 className="btn-secondary"
                 disabled={isLoading}
               >
-                ⬅️ Atrás
+                Atrás
               </button>
               <button
                 onClick={cancelOperation}
@@ -612,7 +626,7 @@ function App() {
                 disabled={isLoading}
                 style={{ backgroundColor: "#672930" }}
               >
-                ❌ Cancelar Operación
+                Cancelar Operación
               </button>
               <button
                 onClick={() => {
@@ -632,25 +646,25 @@ function App() {
                 )}
               </button>
               <div style={{ margin: "16px 0" }}>
-              <label style={{ marginRight: "24px" }}>
-                <input
-                  type="checkbox"
-                  checked={enviarMail}
-                  onChange={e => setEnviarMail(e.target.checked)}
-                  style={{ marginRight: "8px" }}
-                />
-                Enviar notificación por mail
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={enviarMonitores}
-                  onChange={e => setEnviarMonitores(e.target.checked)}
-                  style={{ marginRight: "8px" }}
-                />
-                Publicar en monitores
-              </label>
-            </div>
+                <label style={{ marginRight: "24px" }}>
+                  <input
+                    type="checkbox"
+                    checked={enviarMail}
+                    onChange={(e) => setEnviarMail(e.target.checked)}
+                    style={{ marginRight: "8px" }}
+                  />
+                  Enviar notificación por mail
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={enviarMonitores}
+                    onChange={(e) => setEnviarMonitores(e.target.checked)}
+                    style={{ marginRight: "8px" }}
+                  />
+                  Publicar en monitores
+                </label>
+              </div>
             </div>
             <Toaster
               position="bottom-right"
