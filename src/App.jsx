@@ -35,10 +35,6 @@ function App() {
       }
     }
 
-    const handleMonitorClick = () => {
-      setLocation("/monitores");
-    }
-
     setMostrarFormulario(false);
     setMostrarMotivos(false);
     setOrdenSeleccionada(null);
@@ -214,6 +210,13 @@ function App() {
     }
   };
   const [confirmar, setConfirmar] = useState(false);
+  const handleMonitorClick = useCallback(() => {
+    try {
+      setLocation("/monitores");
+    } catch (err) {
+      console.error("Navigation error:", err);
+    }
+  }, [setLocation]);
   const enviarConfirmacion = async () => {
     setConfirmar(true);
     try {

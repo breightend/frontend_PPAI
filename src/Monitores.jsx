@@ -17,7 +17,6 @@ export default function Monitores() {
       const data = await fetchData("/monitores");
       console.log("Monitores data:", data);
 
-      // Handle both array and single object responses
       const dataArray = Array.isArray(data) ? data : [data];
       setMonitoresData(dataArray);
       setLastUpdate(new Date());

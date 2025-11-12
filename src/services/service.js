@@ -8,7 +8,15 @@ export const fetchData = async (endpoint) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);
-    throw error;
+    if (error.response) {
+      const status = error.response.status;
+      const message = error.response.data?.message || error.response.data || "";
+      throw new Error(`GET ${endpoint} failed ${status} ${message}`);
+    }
+    if (error.request) {
+      throw new Error(`GET ${endpoint} failed: no response from server`);
+    }
+    throw new Error(`GET ${endpoint} failed: ${error.message}`);
   }
 };
 
@@ -23,8 +31,14 @@ export const postData = async (endpoint, data = {}, config = {}) => {
     return response.data;
   } catch (error) {
     console.error("Error posting data:", error);
-    throw error;
+    if (error.response) {
+      const status = error.response.status;
+      const message = error.response.data?.message || error.response.data || "";
+      throw new Error(`POST ${endpoint} failed ${status} ${message}`);
+    }
+    if (error.request) {
+      throw new Error(`POST ${endpoint} failed: no response from server`);
+    }
+    throw new Error(`POST ${endpoint} failed: ${error.message}`);
   }
 };
-
-
