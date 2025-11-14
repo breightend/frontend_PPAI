@@ -16,8 +16,7 @@ function App() {
   const [motivosSeleccionados, setMotivosSeleccionados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showOnlyUnavailable, setShowOnlyUnavailable] = useState(false);
-  const [enviarMail, setEnviarMail] = useState(false);
-  const [enviarMonitores, setEnviarMonitores] = useState(false);
+
   const [location, setLocation] = useLocation();
 
   const cancelOperation = useCallback(() => {
@@ -181,7 +180,7 @@ function App() {
     }
   };
 
-  const enviarobservacion = async () => {
+  const enviarObservacion = async () => {
     try {
       console.log("Enviando observación:", { observacion, ordenSeleccionada });
 
@@ -212,18 +211,45 @@ function App() {
   const [confirmar, setConfirmar] = useState(false);
   const handleMonitorClick = useCallback(() => {
     try {
-      setLocation("/monitores");
+      if (ordenSeleccionada) {
+        setLocation(`/monitores?ordenId=${ordenSeleccionada}`);
+      } else {
+        toast.error("Debe seleccionar una orden primero", {
+          duration: 3000,
+          style: {
+            background: "#fee2e2",
+            color: "#dc2626",
+          },
+        });
+      }
     } catch (err) {
       console.error("Navigation error:", err);
     }
-  }, [setLocation]);
+  }, [setLocation, ordenSeleccionada]);
   const enviarConfirmacion = async () => {
+    if (!ordenSeleccionada) {
+      throw new Error("Debe seleccionar una orden antes de confirmar.");
+    }
+
+    if (motivosSeleccionados.length === 0) {
+      throw new Error("Debe seleccionar al menos un motivo fuera de servicio.");
+    }
+
     setConfirmar(true);
     try {
       await postData("/confirmar-cierre", {
-        confirmar: confirmar,
+        ordenId: ordenSeleccionada,
+        observation: observacion,
+        motivos: motivosSeleccionados.map((m) => ({
+          idMotivo: m.idMotivo,
+          comentario: m.comentario || "",
+        })),
+        enviarMail: true,
+        enviarMonitores: true,
+        confirmar: true,
       });
       console.log("Confirmación enviada exitosamente");
+      return true;
     } catch (err) {
       console.error("Error al enviar confirmación:", err);
       throw err;
@@ -251,16 +277,6 @@ function App() {
       return;
     }
 
-    if (!enviarMail && !enviarMonitores) {
-      setMensaje(
-        "Debe seleccionar al menos una opción: enviar mail o publicar en monitores."
-      );
-      toast.error(
-        "Debe seleccionar al menos una opción: enviar mail o publicar en monitores."
-      );
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -272,7 +288,7 @@ function App() {
 
       if (observacion.trim() && ordenSeleccionada) {
         console.log("Enviando observación para orden:", ordenSeleccionada);
-        await enviarobservacion();
+        await enviarObservacion();
       } else if (observacion.trim() && !ordenSeleccionada) {
         console.warn(
           "Observación proporcionada pero no hay orden seleccionada"
@@ -286,8 +302,8 @@ function App() {
           idMotivo: m.idMotivo,
           comentario: m.comentario || "",
         })),
-        enviarMail: enviarMail,
-        enviarMonitores: enviarMonitores,
+        enviarMail: true,
+        enviarMonitores: true,
       });
 
       console.log("Respuesta del servidor:", resData);
@@ -300,17 +316,8 @@ function App() {
       setMensaje(responseMessage);
 
       toast.custom((t) => {
-        let extraMsg = "";
-        if (enviarMail && enviarMonitores) {
-          extraMsg =
-            "📧 Notificación enviada por mail y publicada en monitores.";
-        } else if (enviarMail) {
-          extraMsg = "📧 Notificación enviada por mail.";
-        } else if (enviarMonitores) {
-          extraMsg = "🖥️ Publicada en monitores.";
-        } else {
-          extraMsg = "No se envió notificación.";
-        }
+        let extraMsg =
+          "Notificación enviada por mail y publicada en monitores.";
         return (
           <div
             className={`${
@@ -335,7 +342,7 @@ function App() {
                   <p className="mt-1 text-sm text-wine-secondary">
                     {resData && resData.message
                       ? resData.message
-                      : "📧 Revisa tu email para más detalles"}
+                      : "Revisa tu email para más detalles"}
                   </p>
                   <p className="mt-2 text-xs text-wine-secondary">{extraMsg}</p>
                 </div>
@@ -361,6 +368,8 @@ function App() {
         setMotivosSeleccionados([]);
         setMensaje("");
       }, 3000);
+
+      return true;
     } catch (error) {
       console.error("Error completo al cerrar orden:", error);
 
@@ -397,9 +406,6 @@ function App() {
     <div id="root">
       <nav className="navbar">
         <h1>Red Sísmica</h1>
-        <button className="btn-monitores" onClick={handleMonitorClick}>
-          Ver Monitores
-        </button>
         <div className="user-avatar-container">
           <div className="user-avatar">
             <span className="avatar-initials">
@@ -640,9 +646,18 @@ function App() {
                 Cancelar Operación
               </button>
               <button
-                onClick={() => {
-                  cerrarOrden();
-                  enviarConfirmacion();
+                onClick={async () => {
+                  try {
+                    await cerrarOrden();
+
+                    // Navegar directamente a monitores después del cierre exitoso
+                    setTimeout(() => {
+                      setLocation(`/monitores?ordenId=${ordenSeleccionada}`);
+                    }, 1500);
+                  } catch (error) {
+                    console.error("Error al cerrar la orden:", error);
+                    setMensaje(`Error: ${error.message}`);
+                  }
                 }}
                 className="btn-primary btn-success"
                 disabled={motivosSeleccionados.length === 0 || isLoading}
@@ -656,26 +671,6 @@ function App() {
                   "Confirmar Cierre"
                 )}
               </button>
-              <div style={{ margin: "16px 0" }}>
-                <label style={{ marginRight: "24px" }}>
-                  <input
-                    type="checkbox"
-                    checked={enviarMail}
-                    onChange={(e) => setEnviarMail(e.target.checked)}
-                    style={{ marginRight: "8px" }}
-                  />
-                  Enviar notificación por mail
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={enviarMonitores}
-                    onChange={(e) => setEnviarMonitores(e.target.checked)}
-                    style={{ marginRight: "8px" }}
-                  />
-                  Publicar en monitores
-                </label>
-              </div>
             </div>
             <Toaster
               position="bottom-right"

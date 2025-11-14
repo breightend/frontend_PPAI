@@ -4,25 +4,48 @@ import "./Monitores.css";
 import { useLocation } from "wouter";
 
 export default function Monitores() {
-  const [monitoresData, setMonitoresData] = useState([]);
+  const [monitoresData, setMonitoresData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [location, setLocation] = useLocation()
+  const [location, setLocation] = useLocation();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const getOrdenIdFromUrl = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get("ordenId");
+  };
 
   const fetchMonitoresData = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await fetchData("/monitores");
+
+      const ordenId = getOrdenIdFromUrl();
+      if (!ordenId) {
+        throw new Error(
+          "No se proporcionó el ID de la orden. Debe acceder desde el proceso de confirmación."
+        );
+      }
+
+      const data = await fetchData(`/monitores?ordenId=${ordenId}`);
       console.log("Monitores data:", data);
 
-      const dataArray = Array.isArray(data) ? data : [data];
-      setMonitoresData(dataArray);
+      if (data && data.success) {
+        setMonitoresData(data.data);
+      } else {
+        setError("No se recibieron datos válidos del servidor");
+      }
       setLastUpdate(new Date());
     } catch (error) {
       console.error("Error fetching monitores data:", error);
-      setError("Error al cargar los datos de monitores");
+      if (error.message.includes("ordenId")) {
+        setError(
+          "Debe acceder a esta pantalla desde el proceso de confirmación de cierre de orden."
+        );
+      } else {
+        setError(`Error al cargar los datos de monitores: ${error.message}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -31,13 +54,18 @@ export default function Monitores() {
   const handleBackClick = () => {
     setLocation("/");
   };
+
   useEffect(() => {
     fetchMonitoresData();
 
     const interval = setInterval(fetchMonitoresData, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshTrigger]);
+
+  useEffect(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, [location]);
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "No disponible";
@@ -67,20 +95,16 @@ export default function Monitores() {
     }
   };
 
-  const getNotificationTypeColor = (tipo) => {
-    switch (tipo?.toLowerCase()) {
-      case "info":
-        return "notification-info";
-      case "warning":
-      case "advertencia":
-        return "notification-warning";
-      case "error":
-        return "notification-error";
-      case "success":
-      case "exitoso":
-        return "notification-success";
+  const getPriorityColor = (prioridad) => {
+    switch (prioridad?.toLowerCase()) {
+      case "alta":
+        return "priority-high";
+      case "media":
+        return "priority-medium";
+      case "baja":
+        return "priority-low";
       default:
-        return "notification-default";
+        return "priority-normal";
     }
   };
 
@@ -108,14 +132,40 @@ export default function Monitores() {
           <div className="error-message">
             <h3>Error de Conexión</h3>
             <p>{error}</p>
-            <button onClick={fetchMonitoresData} className="retry-button">
-              Reintentar
-            </button>
+            <div className="error-buttons">
+              {!error.includes("ordenId") && (
+                <button onClick={fetchMonitoresData} className="retry-button">
+                  Reintentar
+                </button>
+              )}
+              <button onClick={handleBackClick} className="back-button">
+                Volver al Inicio
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
+
+  if (!monitoresData) {
+    return (
+      <div className="monitores-container">
+        <div className="monitores-header">
+          <h1>Sistema de Monitoreo Sismológico</h1>
+        </div>
+        <div className="no-data-container">
+          <h3>No hay datos disponibles</h3>
+          <p>No se encontraron registros de monitoreo en este momento.</p>
+          <button onClick={fetchMonitoresData} className="retry-button">
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { sismografo, pantalla, notificacion } = monitoresData;
 
   return (
     <div className="monitores-container">
@@ -133,185 +183,159 @@ export default function Monitores() {
       </div>
 
       <div className="monitores-content">
-        {monitoresData.length === 0 ? (
-          <div className="no-data-container">
-            <h3>No hay datos disponibles</h3>
-            <p>No se encontraron registros de monitoreo en este momento.</p>
+        <div className="monitores-grid">
+          <div className="monitor-card">
+            <div className="card-header">
+              <h3 className="card-title">Información del Sismógrafo</h3>
+            </div>
+            <div className="card-content">
+              <div className="section">
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Identificador:</span>
+                    <span className="info-value">
+                      #{sismografo.identificador}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Estado:</span>
+                    <span
+                      className={`status-badge ${getStatusColor(
+                        sismografo.estado
+                      )}`}
+                    >
+                      {sismografo.estado}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Cambio de Estado:</span>
+                    <span className="info-value">
+                      {formatTimestamp(sismografo.fechaCambioEstado)}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Fecha de Cierre:</span>
+                    <span className="info-value">
+                      {formatTimestamp(sismografo.fechaCierre)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="monitores-grid">
-            {monitoresData.map((item, index) => (
-              <div key={index} className="monitor-card">
-                <div className="card-header">
-                  <h3 className="card-title">
-                    {item.tipo === "cierre_orden_inspeccion"
-                      ? "Cierre de Orden de Inspección"
-                      : item.tipo || "Evento de Monitoreo"}
-                  </h3>
-                  <div className="card-timestamp">
-                    {formatTimestamp(item.timestamp)}
+
+          <div className="monitor-card">
+            <div className="card-header">
+              <h3 className="card-title">Información de Pantalla</h3>
+            </div>
+            <div className="card-content">
+              <div className="section">
+                <div className="message-display">
+                  <div className="message-text">{pantalla.mensaje}</div>
+                  <div className="message-date">
+                    {formatTimestamp(pantalla.fecha)}
                   </div>
                 </div>
 
-                {item.datos && (
-                  <div className="card-content">
-                    {/* Sismógrafo Information */}
-                    {item.datos.sismografo && (
-                      <div className="section">
-                        <h4 className="section-title">Sismógrafo</h4>
-                        <div className="info-grid">
-                          <div className="info-item">
-                            <span className="info-label">Identificador:</span>
-                            <span className="info-value">
-                              #{item.datos.sismografo.identificador}
-                            </span>
-                          </div>
-                          <div className="info-item">
-                            <span className="info-label">Estado:</span>
-                            <span
-                              className={`status-badge ${getStatusColor(
-                                item.datos.sismografo.estado
-                              )}`}
-                            >
-                              {item.datos.sismografo.estado}
-                            </span>
-                          </div>
-                          <div className="info-item">
-                            <span className="info-label">
-                              Cambio de Estado:
-                            </span>
-                            <span className="info-value">
-                              {formatTimestamp(
-                                item.datos.sismografo.fechaCambioEstado
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Cierre Information */}
-                    {item.datos.cierre && (
-                      <div className="section">
-                        <h4 className="section-title">
-                          Información del Cierre
-                        </h4>
-                        <div className="info-grid">
-                          <div className="info-item">
-                            <span className="info-label">Fecha de Cierre:</span>
-                            <span className="info-value">
-                              {formatTimestamp(item.datos.cierre.fechaCierre)}
-                            </span>
-                          </div>
-                          {item.datos.cierre.motivos &&
-                            item.datos.cierre.motivos.length > 0 && (
-                              <div className="info-item full-width">
-                                <span className="info-label">Motivos:</span>
-                                <ul className="motivos-list">
-                                  {item.datos.cierre.motivos.map(
-                                    (motivo, idx) => (
-                                      <li key={idx} className="motivo-item">
-                                        {typeof motivo === "string"
-                                          ? motivo
-                                          : motivo.descripcion ||
-                                            JSON.stringify(motivo)}
-                                      </li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-                            )}
-                          {item.datos.cierre.comentarios &&
-                            item.datos.cierre.comentarios.length > 0 && (
-                              <div className="info-item full-width">
-                                <span className="info-label">Comentarios:</span>
-                                <ul className="comentarios-list">
-                                  {item.datos.cierre.comentarios.map(
-                                    (comentario, idx) => (
-                                      <li key={idx} className="comentario-item">
-                                        {typeof comentario === "string"
-                                          ? comentario
-                                          : comentario.texto ||
-                                            JSON.stringify(comentario)}
-                                      </li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-                            )}
-                          {item.datos.cierre.destinatarios &&
-                            item.datos.cierre.destinatarios.length > 0 && (
-                              <div className="info-item full-width">
-                                <span className="info-label">
-                                  Destinatarios:
-                                </span>
-                                <div className="destinatarios-list">
-                                  {item.datos.cierre.destinatarios.map(
-                                    (destinatario, idx) => (
-                                      <span
-                                        key={idx}
-                                        className="destinatario-tag"
-                                      >
-                                        {typeof destinatario === "string"
-                                          ? destinatario
-                                          : destinatario.email ||
-                                            destinatario.nombre ||
-                                            JSON.stringify(destinatario)}
-                                      </span>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Notificación Information */}
-                    {item.datos.notificacion && (
-                      <div className="section">
-                        <h4 className="section-title">Notificación</h4>
-                        <div className="notification-content">
-                          <div
-                            className={`notification-message ${getNotificationTypeColor(
-                              item.datos.notificacion.tipoNotificacion
-                            )}`}
-                          >
-                            <div className="notification-text">
-                              {item.datos.notificacion.mensaje}
-                            </div>
-                            <div className="notification-details">
-                              <span className="notification-status">
-                                Estado: {item.datos.notificacion.estado}
-                              </span>
-                              <span className="notification-type">
-                                Tipo: {item.datos.notificacion.tipoNotificacion}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                {pantalla.comentarios && pantalla.comentarios.length > 0 && (
+                  <div className="info-item full-width">
+                    <span className="info-label">Comentarios:</span>
+                    <ul className="comentarios-list">
+                      {pantalla.comentarios.map((comentario, idx) => (
+                        <li key={idx} className="comentario-item">
+                          {comentario}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
 
-                {/* Metadatos */}
-                {item.metadatos && (
-                  <div className="card-footer">
-                    <div className="metadata">
-                      <span className="metadata-item">
-                        {item.metadatos.sistema} - {item.metadatos.modulo}
+                {pantalla.motivos && pantalla.motivos.length > 0 && (
+                  <div className="info-item full-width">
+                    <span className="info-label">
+                      Motivos del Cambio de Estado:
+                    </span>
+                    <ul className="motivos-list">
+                      {pantalla.motivos.map((motivo, idx) => (
+                        <li key={idx} className="motivo-item">
+                          {motivo}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {pantalla.responsablesReparacion &&
+                  pantalla.responsablesReparacion.length > 0 && (
+                    <div className="info-item full-width">
+                      <span className="info-label">
+                        Responsables de Reparación:
                       </span>
-                      <span className="metadata-version">
-                        v{item.metadatos.version}
-                      </span>
+                      <ul className="responsables-list">
+                        {pantalla.responsablesReparacion.map((email, idx) => (
+                          <li key={idx} className="responsable-item">
+                            {email}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
-            ))}
+            </div>
           </div>
-        )}
+
+          <div className="monitor-card">
+            <div className="card-header">
+              <h3 className="card-title">Estado de Notificaciones</h3>
+            </div>
+            <div className="card-content">
+              <div className="section">
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Total Destinatarios:</span>
+                    <span className="info-value">
+                      {notificacion.totalDestinatarios}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Prioridad:</span>
+                    <span
+                      className={`priority-badge ${getPriorityColor(
+                        notificacion.prioridad
+                      )}`}
+                    >
+                      {notificacion.prioridad.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Requiere Acción:</span>
+                    <span
+                      className={`action-required ${
+                        notificacion.requiereAccion ? "yes" : "no"
+                      }`}
+                    >
+                      {notificacion.requiereAccion ? "SÍ" : "NO"}
+                    </span>
+                  </div>
+                </div>
+
+                {notificacion.mailsNotificados &&
+                  notificacion.mailsNotificados.length > 0 && (
+                    <div className="info-item full-width">
+                      <span className="info-label">Correos Notificados:</span>
+                      <ul className="emails-list">
+                        {notificacion.mailsNotificados.map((email, idx) => (
+                          <li key={idx} className="email-item">
+                            {email}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

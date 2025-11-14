@@ -22,7 +22,6 @@ export const fetchData = async (endpoint) => {
 
 export const postData = async (endpoint, data = {}, config = {}) => {
   try {
-    // Pass the optional axios config through (for params, headers, etc.)
     const response = await axios.post(
       `${API_BASE_URL}${endpoint}`,
       data,
